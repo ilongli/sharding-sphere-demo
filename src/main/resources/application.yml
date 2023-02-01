@@ -1,3 +1,4 @@
+# 分库例子
 spring:
   shardingsphere:
     datasource:
@@ -17,28 +18,23 @@ spring:
         username: root
         password: 123456
     rules:
-      sharding:
-        tables:
-          #这里填写表名称，程序中对这张表的所有操作，都会采用下面的路由方案
-          #比如我们上面Mybatis就是对user表进行操作，所以会走下面的路由方案
-          user:
-            #这里填写实际的路由节点，比如现在我们要分两个库，那么就可以把两个库都写上，以及对应的表
-            #也可以使用表达式，比如下面的可以简写为 db$->{0..1}.user
-            actual-data-nodes: db0.user,db1.user
-            #这里是分库策略配置
-            database-strategy:
-              #这里选择标准策略，也可以配置复杂策略，基于多个键进行分片
-              standard:
-                #参与分片运算的字段，下面的算法会根据这里提供的字段进行运算
-                sharding-column: id
-                #这里填写我们下面自定义的算法名称
-                sharding-algorithm-name: my-alg
-        sharding-algorithms:
-          #自定义一个新的算法，名称随意
-          my-alg:
-            #算法类型，官方内置了很多种，这里演示最简单的一种
-            type: MOD
+      #配置读写分离
+      readwrite-splitting:
+        data-sources:
+          #名称随便写
+          user-db:
+            #使用静态类型，动态Dynamic类型可以自动发现auto-aware-data-source-name，这里不演示
+            type: Static
             props:
-              sharding-count: 2
+              #配置写库（只能一个）
+              write-data-source-name: db0
+              #配置从库（多个，逗号隔开）
+              read-data-source-names: db1
+              #负载均衡策略，可以自定义
+              load-balancer-name: my-load
+        load-balancers:
+          #自定义的负载均衡策略
+          my-load:
+            type: ROUND_ROBIN
     props:
       sql-show: true

@@ -17,5 +17,6 @@ public interface UserMapper {
     List<User> listUserBetweenId(Integer from, Integer to);
 
     @Insert("insert into user(id, name, age) values(#{id}, #{name}, #{age})")
+//    @Insert("insert into user(name, age) values(#{name}, #{age})")
     int addUser(User user);
 }
