@@ -1,0 +1,40 @@
+# 分库例子
+spring:
+  shardingsphere:
+    datasource:
+      names: db0,db1,
+      db0:
+        # 数据源实现类，这里使用默认的HikariDataSource
+        type: com.zaxxer.hikari.HikariDataSource
+        # 数据库驱动
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://42.193.255.106:33061/test
+        username: root
+        password: 123456
+      db1:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://42.193.255.106:33062/test
+        username: root
+        password: 123456
+    rules:
+      #配置读写分离
+      readwrite-splitting:
+        data-sources:
+          #名称随便写
+          user-db:
+            #使用静态类型，动态Dynamic类型可以自动发现auto-aware-data-source-name，这里不演示
+            type: Static
+            props:
+              #配置写库（只能一个）
+              write-data-source-name: db0
+              #配置从库（多个，逗号隔开）
+              read-data-source-names: db1
+              #负载均衡策略，可以自定义
+              load-balancer-name: my-load
+        load-balancers:
+          #自定义的负载均衡策略
+          my-load:
+            type: ROUND_ROBIN
+    props:
+      sql-show: true
