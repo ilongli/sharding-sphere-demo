@@ -1,0 +1,51 @@
+# 分库例子
+spring:
+  shardingsphere:
+    datasource:
+      names: db0,db1,db2
+      db0:
+        # 数据源实现类，这里使用默认的HikariDataSource
+        type: com.zaxxer.hikari.HikariDataSource
+        # 数据库驱动
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://mysql-mgr-1:33066/test
+        username: root
+        password: 123456
+      db1:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://mysql-mgr-2:33067/test
+        username: root
+        password: 123456
+      db2:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://mysql-mgr-3:33068/test
+        username: root
+        password: 123456
+    rules:
+      readwrite-splitting:
+        data-sources:
+          replica_ds:
+            dynamicStrategy:
+              autoAwareDataSourceName: readwrite_ds
+      database-discovery:
+        data-sources:
+          readwrite_ds:
+            dataSourceNames:
+              - db0
+              - db1
+              - db2
+            discoveryHeartbeatName: mgr_heartbeat
+            discoveryTypeName: mgr
+        discovery-heartbeats:
+          mgr_heartbeat:
+            props:
+              keep-alive-cron: '0/5 * * * * ?'
+        discovery-types:
+          mgr:
+            type: MySQL.MGR
+            props:
+              group-name: ce9be252-2b71-11e6-b8f4-00212844f856
+    props:
+      sql-show: true
